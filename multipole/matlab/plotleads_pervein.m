@@ -1,0 +1,99 @@
+% The input of this function comes from the result of
+% Find_optimal_monodipoles.
+%plotleads_pervein([7,14,20,21,22,23,24],[13,19,22,24],[9,15,19,23,24],[8,14,17,19,21,22,23,24],[7,13,17,19,20,21,22,23,24],"HF")
+
+function plotleads_pervein(AN,AL,LA,IL,IN,which_cases)
+
+close all
+
+
+
+v1 = 100*AN./AN(end);
+v2 = 100*AL./AL(end);
+v3 = 100*LA./LA(end);
+v4 = 100*IL./IL(end);
+v5 = 100*IN./IN(end);
+
+x1 = 1:length(v1);
+x2 = 1:length(v2);
+x3 = 1:length(v3);
+x4 = 1:length(v4);
+x5 = 1:length(v5);
+
+maxx = max([length(x1),length(x2),length(x3),length(x4),length(x5)]);
+
+str = '#FC0000';
+color = sscanf(str(2:end),'%2x%2x%2x',[1 3])/255;
+
+figure('units','normalized','outerposition',[0 0 1 1])
+plot(x1,v1,...
+    '-o',...
+    'Color', color,...
+    'MarkerFaceColor','r',...
+    'MarkerSize',20,...
+    'LineWidth',5)
+    hold
+    
+str = '#ED7C31';
+color = sscanf(str(2:end),'%2x%2x%2x',[1 3])/255;
+
+plot(x2,v2,...
+     '-o',...
+    'Color', color,...
+    'MarkerFaceColor',color,...
+    'MarkerSize',20,...
+    'LineWidth',5)
+
+
+    
+str = '#FFBF00';
+color = sscanf(str(2:end),'%2x%2x%2x',[1 3])/255;
+
+plot(x3,v3,...
+     '-o',...
+    'Color', color,...
+    'MarkerFaceColor',color,...
+    'MarkerSize',20,...
+    'LineWidth',5)
+    
+str = '#00B04F';
+color = sscanf(str(2:end),'%2x%2x%2x',[1 3])/255;
+
+plot(x4,v4,...
+     '-o',...
+    'Color', color,...
+    'MarkerFaceColor',color,...
+    'MarkerSize',20,...
+    'LineWidth',5)
+    
+str = '#00B0F0';
+color = sscanf(str(2:end),'%2x%2x%2x',[1 3])/255;
+
+plot(x5,v5,...
+     '-o',...
+    'Color', color,...
+    'MarkerFaceColor',color,...
+    'MarkerSize',20,...
+    'LineWidth',5)
+
+
+
+title({strcat("Optimal number of electrodes'"),strcat(" pairs in the ",...
+    which_cases, " cohort")," "}, 'FontSize',40);
+  
+xlabel("Electrodes' pairs")
+xlim([1,maxx])
+xtl = get(gca,'XTickLabel');
+set(gca,'XTickLabel', sprintfc('%d',1:maxx),...
+    'fontsize',40)
+
+xticks(1:maxx)
+   
+ylabel({"% of patients","achieving optimal response",""},...
+       'FontSize', 40)
+ylim([20,100])
+lgd = legend({'AN ','AL ','LA ','IL ','IN'},...
+    'Location','southeast','Orientation','horizontal',...
+    'FontSize',40);
+title(lgd,{'Vein location'})
+end

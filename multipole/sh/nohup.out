@@ -1,0 +1,1 @@
+R CMD BATCH /home/crg17/Desktop/scripts/multipole/R/run_monopoles.R

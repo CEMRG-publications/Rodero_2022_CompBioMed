@@ -1,0 +1,259 @@
+
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> #!/usr/bin/env Rscript
+> 
+> source('/home/crg17/Desktop/scripts/multipole/R/HAC.R')
+Installing packages into ‘/home/crg17/R/x86_64-pc-linux-gnu-library/3.6’
+(as ‘lib’ is unspecified)
+Loading required package: RColorBrewer
+Loading required package: pheatmap
+Loading required package: d3heatmap
+Loading required package: viridis
+Loading required package: viridisLite
+Loading required package: ComplexHeatmap
+Loading required package: circlize
+========================================
+circlize version 0.4.9
+CRAN page: https://cran.r-project.org/package=circlize
+Github page: https://github.com/jokergoo/circlize
+Documentation: https://jokergoo.github.io/circlize_book/book/
+
+If you use it in published research, please cite:
+Gu, Z. circlize implements and enhances circular visualization
+  in R. Bioinformatics 2014.
+
+This message can be suppressed by:
+  suppressPackageStartupMessages(library(circlize))
+========================================
+
+Loading required package: dendextend
+
+---------------------
+Welcome to dendextend version 1.13.4
+Type citation('dendextend') for how to cite the package.
+
+Type browseVignettes(package = 'dendextend') for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+Or contact: <tal.galili@gmail.com>
+
+	To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: ‘dendextend’
+
+The following object is masked from ‘package:stats’:
+
+    cutree
+
+Loading required package: dendsort
+Loading required package: seriation
+Registered S3 method overwritten by 'seriation':
+  method         from 
+  reorder.hclust gclus
+Loading required package: ggplot2
+Loading required package: nnet
+Loading required package: stringr
+Loading required package: jjb
+Loading required package: corrplot
+corrplot 0.84 loaded
+Loading required package: gplots
+
+Attaching package: ‘gplots’
+
+The following objects are masked from ‘package:seriation’:
+
+    bluered, greenred
+
+The following object is masked from ‘package:stats’:
+
+    lowess
+
+Loading required package: doParallel
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+Warning messages:
+1: packages ‘d3heatmap’, ‘ComplexHeatmap’ are not available (for R version 3.6.3) 
+2: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘d3heatmap’
+3: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘ComplexHeatmap’
+> 
+> hearts <- c(paste0("0",1:9),10:24)
+> #hearts <- c("01","10","20")
+> 
+> registerDoParallel(cores=20)
+> foreach(i=1:24) %dopar% {
++ #for(i in c(1:length(hearts))){
++ Crop_base(heart=hearts[i],which_cases="HF",all_subfolders=FALSE,SA_folder="default_CV_0.34")
++ }
+[[1]]
+[[1]][[1]]
+NULL
+
+
+[[2]]
+[[2]][[1]]
+NULL
+
+
+[[3]]
+[[3]][[1]]
+NULL
+
+
+[[4]]
+[[4]][[1]]
+NULL
+
+
+[[5]]
+[[5]][[1]]
+NULL
+
+
+[[6]]
+[[6]][[1]]
+NULL
+
+
+[[7]]
+[[7]][[1]]
+NULL
+
+
+[[8]]
+[[8]][[1]]
+NULL
+
+
+[[9]]
+[[9]][[1]]
+NULL
+
+
+[[10]]
+[[10]][[1]]
+NULL
+
+
+[[11]]
+[[11]][[1]]
+NULL
+
+
+[[12]]
+[[12]][[1]]
+NULL
+
+
+[[13]]
+[[13]][[1]]
+NULL
+
+
+[[14]]
+[[14]][[1]]
+NULL
+
+
+[[15]]
+[[15]][[1]]
+NULL
+
+
+[[16]]
+[[16]][[1]]
+NULL
+
+
+[[17]]
+[[17]][[1]]
+NULL
+
+
+[[18]]
+[[18]][[1]]
+NULL
+
+
+[[19]]
+[[19]][[1]]
+NULL
+
+
+[[20]]
+[[20]][[1]]
+NULL
+
+
+[[21]]
+[[21]][[1]]
+NULL
+
+
+[[22]]
+[[22]][[1]]
+NULL
+
+
+[[23]]
+[[23]][[1]]
+NULL
+
+
+[[24]]
+[[24]][[1]]
+NULL
+
+
+> 
+> system("/home/crg17/Desktop/scripts/4chmodel/sh/sendmail.sh \"Bases cropped finished\"")
+> 
+> #CreateMonopoles(which_cases = "HF",SA_folder="default_nobase")
+> 
+> #system("/home/crg17/Desktop/scripts/4chmodel/sh/sendmail.sh \"Monopoles finished, running dipoles...\"")
+> 
+> #registerDoParallel(cores=20)
+> #foreach(i=1:24) %dopar% {
+> #CreateDipoles(SA_folder='default_nobase',which_cases='HF',heart=hearts[i])
+> #}
+> 
+> #system("/home/crg17/Desktop/scripts/4chmodel/sh/sendmail.sh \"Dipoles finished\"")
+> 
+> 
+> #registerDoParallel(cores=20)
+> #foreach(i=1:24) %dopar% {
+> #system(paste0("/home/crg17/Desktop/scripts/multipole/bin/build_HAC_table.o /data/SA_multipole/default_nobase/HF/",hearts[i]," /media/crg17/\"Seagate Backup Plus Drive\"/CT_cases/HF_case",hearts[i],"/meshing/1000um/BiV"))
+> #}
+> 
+> #system("/home/crg17/Desktop/scripts/multipole/bin/build_HAC_table_RV.o default_nobase HF")
+> 
+> 
+> #system("/home/crg17/Desktop/scripts/4chmodel/sh/sendmail.sh \"Building tables finished\"") 
+> 
+> proc.time()
+   user  system elapsed 
+ 67.928   2.256   7.787 

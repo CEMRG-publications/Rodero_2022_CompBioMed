@@ -1,0 +1,129 @@
+
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> #!/usr/bin/env Rscript
+> 
+> source('/home/crg17/Desktop/scripts/multipole/R/preprocessing.R')
+> CreateDipoles(SA_folder='default_HF',which_cases="RR",heart="all")
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+[1] "Vein AN"
+[1] "Vein AL"
+[1] "Vein LA"
+[1] "Vein IL"
+[1] "Vein IN"
+> 
+> proc.time()
+    user   system  elapsed 
+2074.180    8.972 2083.435 
