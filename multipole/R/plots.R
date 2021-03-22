@@ -2001,8 +2001,8 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
     global_optimal_HF <- MPPDesignReduction(cohort = "HF", output = output)
     
     p <- ggplot(global_optimal_HF, aes(x=Reduction)) +
-      labs(title=paste0("HF patients distribution pacing\nwith a single optimal MPP lead design"),
-           x=paste0("AT090 reduction (",output,")"), y = "Density")
+      labs(title=paste0("Proportion of lead configurations with a reduction of AT090\nusing the cohort-based optimal MPP designs in the HF cohort"),
+           x=paste0("AT090 reduction (",output,")"), y = "Lead configurations (%)")
     p <- p + geom_density(aes(group = Patient))
     
     p <- p + theme_classic(base_size = 40) 
@@ -2077,11 +2077,27 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
   if(curves == "central"){
     source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
     
-    global_optimal_HF <- MPPDesignReduction(cohort = "HF", MPP_design = "1348",
+    HF_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
+                                                    vein = "ALL",
+                                                    which_cases = "HF",
+                                                    method = "max",
+                                                    SA_folder = "default_HF_noPVTV",
+                                                    version = 4)
+    
+    global_optimal_HF <- MPPDesignReduction(cohort = "HF",
+                                            MPP_design = HF_design$Quadripolar[1],
                                             output = output)
     personalised_optimal_HF <- Optimal12ElectrodeReduction(cohort = "HF",
                                                            output = output)
-    global_optimal_RR <- MPPDesignReduction(cohort = "RR", MPP_design = "1238",
+    
+    RR_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
+                                                    vein = "ALL",
+                                                    which_cases = "RR",
+                                                    method = "max",
+                                                    SA_folder = "default_HF_noPVTV",
+                                                    version = 4)
+    global_optimal_RR <- MPPDesignReduction(cohort = "RR",
+                                            MPP_design = RR_design$Quadripolar[1],
                                             output = output)
     personalised_optimal_RR <- Optimal12ElectrodeReduction(cohort = "RR",
                                                            output = output)
@@ -2109,8 +2125,8 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
                                                          length(person_RR_vec))))
     p <- ggplot(final_df, aes(x=Reduction)) 
       
-    p <- p + labs(title="Proportion of lead designs with a reduction of AT090\nusing personalised and population-based optimal MPP designs",
-           x=paste0("AT090 reduction (",output,")"), y = "Lead designs (%)")
+    p <- p + labs(title="Proportion of lead configurations with a reduction of AT090\nusing patient and cohort-based optimal MPP designs",
+           x=paste0("AT090 reduction (",output,")"), y = "Lead configurations (%)")
     p <- p + geom_line(size = 2, aes(colour = Strategy, linetype = Strategy),
                        stat = "density", position = "identity")
     p <- p + scale_y_continuous(breaks = c(0, .05, .1, .15),
@@ -2140,18 +2156,33 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
   }
   if(curves == "optimal_vs_cohort"){
       source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
-
+    
+    HF_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
+                                                    vein = "ALL",
+                                                    which_cases = "HF",
+                                                    method = "max",
+                                                    SA_folder = "default_HF_noPVTV",
+                                                    version = 4)
+    
       optimal_HF_in_HF <- MPPDesignReduction(cohort = "HF",
-                                             MPP_design = "1348",
+                                             MPP_design = HF_design$Quadripolar[1],
                                              output = output)
       optimal_HF_in_RR <- MPPDesignReduction(cohort = "RR",
-                                             MPP_design = "1348",
+                                             MPP_design = HF_design$Quadripolar[1],
                                              output = output)
+      
+      RR_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
+                                                      vein = "ALL",
+                                                      which_cases = "RR",
+                                                      method = "max",
+                                                      SA_folder = "default_HF_noPVTV",
+                                                      version = 4)
+      
       optimal_RR_in_HF <- MPPDesignReduction(cohort = "HF",
-                                             MPP_design = "1238",
+                                             MPP_design = RR_design$Quadripolar[1],
                                              output = output)
       optimal_RR_in_RR <- MPPDesignReduction(cohort = "RR",
-                                             MPP_design = "1238",
+                                             MPP_design = RR_design$Quadripolar[1],
                                              output = output)
       
       final_df <- as.data.frame(matrix(nrow = 0, ncol = 2))
@@ -2172,8 +2203,8 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
       
       p <- ggplot(final_df, aes(x = Reduction)) 
       
-      p <- p + labs(title="Proportion of lead designs with reduction in AT090\nin population-based optimal MPP designs",
-                    x=paste0("AT090 reduction (",output,")"), y = "Lead designs (%)")
+      p <- p + labs(title="Proportion of lead configurations with reduction in AT090\nin population-based optimal MPP designs",
+                    x=paste0("AT090 reduction (",output,")"), y = "Lead configurations (%)")
       # p <- p + geom_line(stat = "density", size = 1)
       p <- p + geom_line(size = 2, aes(colour = Strategy, linetype = Strategy),
                             stat = "density", position = "identity")
