@@ -1790,7 +1790,7 @@ SensitivityAnalysis <- function(analysis, alpha = 0.01, flag_debugging = FALSE,
 #' @description Function to ease the replication of the p-values obtained for
 #' the paper.
 #' 
-#' @param comparison "Design" to assess if a given design has a significant 
+#' @param comparison "design" to assess if a given design has a significant 
 #' reduction in AT090.
 #' "design_vs_personalised" to assess the differences between a given MPP lead
 #' design and choosing the personalised value.
@@ -1800,6 +1800,11 @@ SensitivityAnalysis <- function(analysis, alpha = 0.01, flag_debugging = FALSE,
 #' @param output "ms" or "%" to express the result in absolute or relative
 #' terms.
 #' @param alpha Confidence level for the Wilcoxon / Mann-Whitney tests.
+#' @param alternative "g", "l" or "t" for grater, less, or two-sided in the 
+#' comparison.
+#' @param SA_folder Name of the simulations folder
+#' @param metric_option Metric to assess. AT090 and TAT are the two more used.
+#' @param flag_debugging If TRUE, prints whatever is reading and writing.
 #' 
 #' @return The p-value and the means of whatever is compared.
 
@@ -1837,7 +1842,9 @@ Getpvalues <- function(comparison, MPP_design, cohort, output, alpha = 0.01,
     
     return(list(paste0("p-value: ",test$p.value,2),
                 paste0("Mean value: ",
-                       round(mean(design_vec),2))
+                       round(mean(design_vec),2)),
+                paste0("SD: ",
+                       round(sd(design_vec),2))
                 )
     )
   }
