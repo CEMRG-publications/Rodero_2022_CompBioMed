@@ -88,7 +88,7 @@ for heart in $all_cases
     electrodes_path=$common_path"/"$which_cases"_case"$heart"/simulations/multipole/electrodes"
 
     cmd="mkdir -p "$init_files_path
-    echo $cmd 
+    echo $cmd
     eval $cmd
 
     if [[ $biv_only == true ]]
@@ -96,8 +96,8 @@ for heart in $all_cases
 
     if [[ $midseptum == false ]]
     then
-    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py 
-    --stimulus "$electrodes_path"/BiV.RV_endo.apex.vtx 
+    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py
+    --stimulus "$electrodes_path"/BiV.RV_endo.apex.vtx
     --output "$init_files_path"/"$SA_folder"_BiV.RV_endo.apex
     --CV_l "$CV_l" --CV_t "$CV_t" --kFEC "$kFEC
     echo $cmd
@@ -105,8 +105,8 @@ for heart in $all_cases
 
     elif [[ $midseptum == true ]]
     then
-    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py 
-    --stimulus "$electrodes_path"/BiV.midseptum.vtx 
+    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py
+    --stimulus "$electrodes_path"/BiV.midseptum.vtx
     --output "$init_files_path"/"$SA_folder"_BiV.midseptum
     --CV_l "$CV_l" --CV_t "$CV_t" --kFEC "$kFEC
     echo $cmd
@@ -121,8 +121,8 @@ for heart in $all_cases
     do
     for Z in `seq 1 8`
     do
-    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py 
-    --stimulus "$electrodes_path"/"$PHI"_"$Z".vtx 
+    cmd="/home/crg17/Desktop/scripts/multipole/python/CARPtoEKBATCH.py
+    --stimulus "$electrodes_path"/"$PHI"_"$Z".vtx
     --output "$init_files_path"/"$SA_folder"_"$PHI"_"$Z"
     --CV_l "$CV_l" --CV_t "$CV_t" --kFEC "$kFEC
 

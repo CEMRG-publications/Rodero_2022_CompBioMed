@@ -302,8 +302,8 @@ Print_Individual_Optimal_AT <- function(cohort, metric_option,
 Print_Statistics_AT <- function(SA_folder, vein = "ALL", 
                                 flag_debugging = FALSE){
   
-  source('/home/crg17/Desktop/scripts/multipole/R/common_functions.R')
-  source('/home/crg17/Desktop/scripts/multipole/R/optimality_functions.R')
+  source('/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R')
+  source('/home/crg17/Desktop/KCL_projects/MPP/multipole/R/optimality_functions.R')
   
   # We read the RV apex:
     RR_baseline <- Read_csv(file = paste0("/data/SA_multipole/",SA_folder,
@@ -978,8 +978,8 @@ Print_results_metric <- function(SA_folder, vein = "ALL", metric_option,
                                  output_pers = TRUE, output_dpers = TRUE,
                                  output_notinlead = TRUE,
                                  flag_debugging = FALSE){
-  source('/home/crg17/Desktop/scripts/multipole/R/common_functions.R')
-  source('/home/crg17/Desktop/scripts/multipole/R/optimality_functions.R')
+  source('/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R')
+  source('/home/crg17/Desktop/KCL_projects/MPP/multipole/R/optimality_functions.R')
   
   if(vein == "ALL"){
     for(vein_name in c("AN","AL","LA","IL","IN")){
@@ -1301,7 +1301,8 @@ Last_point_activated <- function(heart,which_cases){
 BaselineSingleElectrodeReduction <- function(cohort = "HF",
                                              output = "%",
                                              SA_folder = "default_HF_noPVTV",
-                                             flag_debugging = FALSE){
+                                             flag_debugging = FALSE,
+                                             root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
   if(cohort == "RRHF"){
     single_El_RR <- BaselineSingleElectrodeReduction(cohort = "RR",
@@ -1321,7 +1322,7 @@ BaselineSingleElectrodeReduction <- function(cohort = "HF",
   if(cohort == "RR"){
     cohort <- "h"
   }
-  RVapex <- Read_csv(file = paste0("/data/SA_multipole/",SA_folder,
+  RVapex <- Read_csv(file = paste0(root_directory,SA_folder,
                                    "/",cohort,"/multipole_RVapex.dat"), sep = "",
                      flag_debugging = flag_debugging) %>%
     pull(., var = "AT090")
@@ -1337,7 +1338,7 @@ BaselineSingleElectrodeReduction <- function(cohort = "HF",
   
   
   for(heart in names(RVapex)){
-    singleheart <- paste0("/data/SA_multipole/",SA_folder,"/",cohort,"/",heart,
+    singleheart <- paste0(root_directory,SA_folder,"/",cohort,"/",heart,
                           "/multipole_AT090.dat") %>%
       Read_table(., header = TRUE, flag_debugging = flag_debugging)
     
@@ -1373,7 +1374,8 @@ MPPDesignReduction <- function(cohort = "HF",
                            SA_folder = "default_HF_noPVTV",
                            MPP_design = "1348",
                            output = "%",
-                           flag_debugging = FALSE){
+                           flag_debugging = FALSE,
+                           metric_option="AT090"){
   
   if(cohort == "RRHF"){
     MPP_1_2_RR <- MPPDesignReduction(cohort = "RR",
@@ -1416,7 +1418,7 @@ MPPDesignReduction <- function(cohort = "HF",
     
     if(cohort == "HF"){
       patient_names <- c(patient_names,21:24)
-      if(SA_folder == "scar"){
+      if(SA_folder == "scar" || SA_folder == "scar_6mm"){
         patient_names <- patient_names[-c(13,21)]
       }
     }
@@ -1474,12 +1476,14 @@ MPPDesignReduction <- function(cohort = "HF",
 
 Optimal12ElectrodeReduction <- function(cohort = "HF", output = "%",
                                              SA_folder = "default_HF_noPVTV",
-                                             flag_debugging = FALSE){
+                                             flag_debugging = FALSE,
+                                        root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole",
+                                        metric_option = "AT090"){
   
   hearts <- c(paste0("0",1:9),10:20)
   if(cohort == "HF"){
     hearts <- c(hearts,21:24)
-    if(SA_folder == "scar"){
+    if(SA_folder == "scar" || SA_folder == "scar_6mm"){
       hearts <- hearts[-c(13,21)]
     }
   }
@@ -1488,7 +1492,8 @@ Optimal12ElectrodeReduction <- function(cohort = "HF", output = "%",
                                         metric_option = metric_option,
                                         output = output,
                                         SA_folder = SA_folder,
-                                        flag_debugging = flag_debugging)
+                                        flag_debugging = flag_debugging,
+                                        root_directory = root_directory)
   
   optimal_df <- as.data.frame(matrix(ncol = length(hearts), nrow = 5))
   colnames(optimal_df) <- hearts
@@ -1511,21 +1516,22 @@ Optimal12ElectrodeReduction <- function(cohort = "HF", output = "%",
 All12ElectrodeReduction <- function(cohort = "HF", metric_option = "AT090",
                                     output = "%", 
                                     SA_folder = "default_HF_noPVTV",
-                                    flag_debugging = FALSE){
+                                    flag_debugging = FALSE,
+                                    root_directory = "/data/SA_multipole"){
   Load_Install_Packages("dplyr")
   
   if(cohort == "RR"){
     cohort <- "h"
   }
   
-  RVapex <- Read_csv(file = paste0("/data/SA_multipole/",SA_folder,
+  RVapex <- Read_csv(file = paste0(root_directory,"/",SA_folder,
                                       "/",cohort,"/multipole_RVapex.dat"),
                      sep = "", flag_debugging = flag_debugging) %>%
     pull(., var = metric_option)
  
   names(RVapex) <- c(paste0("0",1:9),10:length(RVapex))
   
-  if(SA_folder == "scar"){
+  if(SA_folder == "scar" || SA_folder == "scar_6mm"){
     names(RVapex) <- c(paste0("0",1:9),10:12,14:20,22:24)
   }
   
@@ -1534,7 +1540,7 @@ All12ElectrodeReduction <- function(cohort = "HF", metric_option = "AT090",
   preoptimal <- optimal_df
   
   for(heart in names(RVapex)){
-    singleheart <- paste0("/data/SA_multipole/",SA_folder,"/",cohort,"/",heart,
+    singleheart <- paste0(root_directory,"/",SA_folder,"/",cohort,"/",heart,
                           "/multipole_",metric_option,".dat") %>%
       Read_table(., header = TRUE, flag_debugging = flag_debugging)
     
@@ -1577,6 +1583,9 @@ All12ElectrodeReduction <- function(cohort = "HF", metric_option = "AT090",
 SensitivityAnalysis <- function(analysis, alpha = 0.01, flag_debugging = FALSE,
                                 cohort, RV_midseptum = FALSE, scar = FALSE,
                                 output = "%"){
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/HAC_2.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
+  
   SA_folders <- c("default_HF_noPVTV",
                   "CV_007","CV_08",
                   "FEC_100","FEC_70",
@@ -1589,7 +1598,8 @@ SensitivityAnalysis <- function(analysis, alpha = 0.01, flag_debugging = FALSE,
   }
   if(scar){
     SA_folders <- c("default_HF_noPVTV",
-                    "scar")
+                    "scar",
+                    "scar_6mm")
   }
   
   if(analysis == "max_change"){
@@ -1810,14 +1820,16 @@ SensitivityAnalysis <- function(analysis, alpha = 0.01, flag_debugging = FALSE,
 
 Getpvalues <- function(comparison, MPP_design, cohort, output, alpha = 0.01, 
                        alternative, SA_folder = "default_HF_noPVTV",
-                       metric_option = "AT090", flag_debugging = FALSE){
+                       metric_option = "AT090", flag_debugging = FALSE,
+                       root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
 
   if(comparison == "allpacing"){
     df <- All12ElectrodeReduction(cohort = cohort,
                                    metric_option = metric_option,
                                    output = output, SA_folder = SA_folder,
-                                   flag_debugging = flag_debugging)
+                                   flag_debugging = flag_debugging,
+                                  root_directory = root_directory)
     
     mean_value <- mean(df$Reduction) %>% round(.,2)
     sd_value <- sd(df$Reduction) %>% round(.,2)
@@ -2025,3 +2037,141 @@ Getpvalues <- function(comparison, MPP_design, cohort, output, alpha = 0.01,
     )
   }
 }
+
+ShowDeltasMonopoleDipole <- function(root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole",
+                                          flag_debugging = FALSE, ms_or_perc="%"){
+  
+  dataframe_reduction <- as.data.frame(matrix(nrow = 0, ncol = 6))
+  SA_folders <- c("default_HF_noPVTV",
+                  "CV_007","CV_08",
+                  "FEC_100","FEC_70",
+                  "kFEC_10","kFEC_7",
+                  "kxf_029","kxf_1",
+                  "RVelec_midseptum",
+                  "scar")
+  for(sa in c(1:length(SA_folders))){
+    
+    if(SA_folders[sa] != "scar"){
+      dataframe_reduction_RR <- All12ElectrodeReduction(cohort = "RR",
+                                                        output=ms_or_perc,
+                                                        root_directory = root_directory,
+                                                        flag_debugging = flag_debugging,
+                                                        SA_folder = SA_folders[sa])
+      dataframe_reduction_RR$Cohort <- "RR"
+      dataframe_reduction_RR$SA_case <- SA_folders[sa]
+      
+      dataframe_reduction <- rbind(dataframe_reduction,dataframe_reduction_RR)
+    }
+    
+    
+    dataframe_reduction_HF <- All12ElectrodeReduction(cohort = "HF",
+                                                      output=ms_or_perc,
+                                                      root_directory = root_directory,
+                                                      flag_debugging = flag_debugging,
+                                                      SA_folder = SA_folders[sa])
+    dataframe_reduction_HF$Cohort <- "HF"
+    dataframe_reduction_HF$SA_case <- SA_folders[sa]
+    
+    dataframe_reduction <- rbind(dataframe_reduction,dataframe_reduction_HF)
+  }
+  
+  
+  
+  FindBestMonopoleDipole <- function(dataframe_reduction){
+    
+    rownames(dataframe_reduction) <- NULL
+    
+    monopole_missing <- TRUE
+    dipole_missing <- TRUE
+    
+    while(monopole_missing || dipole_missing){
+      index_max <- which.max(dataframe_reduction$Reduction)
+      mono_or_di <- dataframe_reduction[index_max,"Design"] %>% as.character() %>% nchar()
+      
+      if(mono_or_di == 1 && monopole_missing){
+        monopole_missing <- FALSE
+        result_monopole <- dataframe_reduction[index_max,]
+      }
+      else if(mono_or_di == 2 && dipole_missing){
+        dipole_missing <- FALSE
+        result_dipole <- dataframe_reduction[index_max,]
+      }
+      
+      dataframe_reduction <- dataframe_reduction[-c(index_max),]
+    }
+    
+    return(rbind(result_monopole,result_dipole))
+  }
+  
+  split_per_patient <- split(dataframe_reduction, 
+                             with(dataframe_reduction, interaction(Patient,Cohort,SA_case)),
+                             drop = TRUE)
+  
+  final_delta <- 0
+  details <- as.data.frame(matrix(nrow = 0, ncol = 8))
+  for(i in c(1:length(split_per_patient))){
+    
+    best_mono_di <- FindBestMonopoleDipole(split_per_patient[[i]])
+    
+    current_delta <- max(best_mono_di$Reduction) - min(best_mono_di$Reduction)
+    
+    best_mono_di$num_elec <- nchar(as.character(best_mono_di$Design))
+    
+    best_mono_di$Delta <- NA
+    best_mono_di$Delta <- current_delta
+    
+    details <- rbind(details,best_mono_di)
+    
+    if(current_delta > final_delta){
+      final_delta <- current_delta
+    }
+  }
+  
+
+  return(list(final_delta,details))
+}
+
+
+ShowDeltaSingleElecOptimalDipole <- function(root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/",
+                                             flag_debugging = FALSE, ms_or_perc="%"){
+  
+  conventionalCRT_split_per_electrode_and_vein <- BaselineSingleElectrodeReduction(cohort = "HF",
+                                                      output = ms_or_perc,
+                                                      SA_folder = "default_HF_noPVTV",
+                                                      flag_debugging = flag_debugging,
+                                                      root_directory = root_directory
+                                                      )
+  
+  optimalBipole_split_per_vein <- Optimal12ElectrodeReduction(cohort = "HF",
+                                                              output = ms_or_perc,
+                                                              SA_folder = "default_HF_noPVTV",
+                                                              flag_debugging = flag_debugging,
+                                                              root_directory = root_directory)
+  
+  # We want to get a dataframe of the worst improvement of conventional CRT
+  # compared to the best improvement of bipole
+  
+  final_dataframe <- as.data.frame(matrix(nrow=0, ncol=5),stringsAsFactors = FALSE)
+  colnames(final_dataframe) <- c("Patient","Worst1elec","Mean1elec","Best1elec","Best2elec")
+  
+  for(i in levels(conventionalCRT_split_per_electrode_and_vein$Patient)){
+    worst1elec <- min(conventionalCRT_split_per_electrode_and_vein$Reduction[conventionalCRT_split_per_electrode_and_vein$Patient==i])
+    mean1elec <- mean(conventionalCRT_split_per_electrode_and_vein$Reduction[conventionalCRT_split_per_electrode_and_vein$Patient==i])
+    best1elec <- max(conventionalCRT_split_per_electrode_and_vein$Reduction[conventionalCRT_split_per_electrode_and_vein$Patient==i])
+    
+    best2elec <- optimalBipole_split_per_vein[,i] %>% max()
+    
+    final_dataframe[nrow(final_dataframe)+1,1] <- i
+    final_dataframe[nrow(final_dataframe),2:ncol(final_dataframe)] <- c(
+                                                   worst1elec,
+                                                   mean1elec,
+                                                   best1elec,
+                                                   best2elec)
+  }
+  
+  return(final_dataframe)
+}
+
+
+
+

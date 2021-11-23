@@ -37,7 +37,8 @@ Load_Install_Packages <- function(list.of.packages){
 
 Read_dataframes <- function(metric_option, lead_option, which_cases, version,
                             SA_folder, normalising = TRUE,
-                            output = "%", flag_debugging = FALSE){
+                            output = "%", flag_debugging = FALSE,
+                            root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
   source("/home/crg17/Desktop/scripts/multipole/R/leads_operations.R")
   Load_Install_Packages("dplyr")
@@ -174,7 +175,7 @@ Read_dataframes <- function(metric_option, lead_option, which_cases, version,
     
     if(which_cases == "RR" || which_cases == "RRHF"){
       for(heart in c("01","02","03","04","05","06","07","08","09",10:20)){
-        singleheart <- Read_table(paste0("/data/SA_multipole/",SA_folder,"/h/",
+        singleheart <- Read_table(paste0(root_directory,SA_folder,"/h/",
                                          heart,"/multipole_",metric_option,
                                          ".dat"), header = TRUE,
                                   flag_debugging = flag_debugging)
@@ -182,7 +183,7 @@ Read_dataframes <- function(metric_option, lead_option, which_cases, version,
         
         RR_cases <- cbind(RR_cases,singlerotlead)    
       }
-        RR_RVapex <- Read_table(paste0("/data/SA_multipole/",SA_folder,
+        RR_RVapex <- Read_table(paste0(root_directory,SA_folder,
                                        "/h/multipole_RVapex.dat"),
                                 header = TRUE, flag_debugging = flag_debugging)
       
@@ -223,11 +224,11 @@ Read_dataframes <- function(metric_option, lead_option, which_cases, version,
       HF_cases <- c()
       hearts_vec <- c("01","02","03","04","05","06","07","08","09",10:24)
       
-      if(SA_folder == "scar"){
+      if(SA_folder == "scar" || SA_folder == "scar_6mm"){
         hearts_vec <- hearts_vec[-c(13,21)]
       }
       for(heart in hearts_vec){
-          singleheart <- paste0("/data/SA_multipole/",SA_folder,"/HF/",heart,
+          singleheart <- paste0(root_directory,SA_folder,"/HF/",heart,
                                 "/multipole_",metric_option,".dat") %>%
             Read_table(., header = TRUE, flag_debugging = flag_debugging)
         
@@ -237,7 +238,7 @@ Read_dataframes <- function(metric_option, lead_option, which_cases, version,
         HF_cases <- cbind(HF_cases,singlerotlead)    
       }
       
-        HF_RVapex <- paste0("/data/SA_multipole/",SA_folder,
+        HF_RVapex <- paste0(root_directory,SA_folder,
                             "/HF/multipole_RVapex.dat") %>%
           Read_table(., header=TRUE, flag_debugging = flag_debugging)
       

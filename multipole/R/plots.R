@@ -23,9 +23,10 @@ Hier_clust_multipole <- function(metric_option, lead_option = "IN",
                                  col_clusters = 3, row_clusters = 10, 
                                  which_cases = "RRHF", max_bar = 30, version,
                                  SA_folder, flag_return = FALSE,
-                                 flag_debugging = FALSE){
+                                 flag_debugging = FALSE,
+                                 root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("dendsort","dendextend", "dplyr","seriation",
                           "stringr","BiocManager","circlize"))
   # BiocManager::install("ComplexHeatmap")
@@ -66,7 +67,8 @@ Hier_clust_multipole <- function(metric_option, lead_option = "IN",
                                         which_cases = which_cases,
                                         version = version,
                                         SA_folder = SA_folder,
-                                        flag_debugging = flag_debugging)
+                                        flag_debugging = flag_debugging,
+                                        root_directory = root_directory)
   normalised_RR <- normalised_cohorts$normalised_RR
   normalised_HF <- normalised_cohorts$normalised_HF
   if(which_cases == "RR" || which_cases == "RRHF"){
@@ -125,6 +127,73 @@ Hier_clust_multipole <- function(metric_option, lead_option = "IN",
     strsplit(.,",") %>%
     str_pad(.,side = "left",width = 4)
   
+  RR_mass <- 1.05*read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol.dat", header = TRUE)
+  RR_mass2color <- RR_mass$RV
+  HF_mass <- 1.05*0.001*read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol_HF.dat", header = TRUE)
+  HF_mass2color <- HF_mass$RV
+  
+  RR_volumes <- read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes.txt", header = TRUE)
+  RR_volume2color <- RR_volumes$LV_mL
+  HF_volumes <- read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes_HF.csv", header = TRUE, sep = ",")
+  HF_volume2color <- HF_volumes$LV
+  
+  RR_quotient <- RR_mass2color/RR_volume2color
+  HF_quotient <- HF_mass2color/HF_volume2color
+  
+  #RR_big <- RR_volume2color > 128 
+  #RR_small <- RR_volume2color < 128
+  RR_color <- ifelse(RR_volume2color > 128 , "#8B0000","#FF7F7F")
+  #HF_big <- HF_volume2color > 269 
+  #HF_small <- HF_volume2color < 269
+  HF_color <- ifelse(HF_volume2color > 269 , "#00008b", "#add8e6")
+  
+  if(which_cases == "RRHF"){
+    vectoplot <- c(RR_volume2color,HF_volume2color)
+    volumes2colors <- c(RR_color,HF_color)
+  }
+  else if(which_cases == "RR"){
+    vectoplot <- c(RR_volume2color)
+    volumes2colors <- c(RR_color)
+  }
+  else if(which_cases == "HF"){
+    vectoplot <- c(HF_volume2color)
+    volumes2colors <- c(HF_color)
+  }
+  
+  
+  # 0 for HF big
+  # 1 for HF small
+  # 2 for RR big
+  # 3 for RR small
+  
+  #if(exists("volumes2color")) rm(volumes2color)
+  #if(which_cases == "RRHF"){
+  #    volumes2color <- sprintf("%s",0*HF_big + 1*HF_small + 2*RR_big + 3*RR_small) 
+  #  }
+  #if(which_cases == "RR"){
+  # volumes2color <- sprintf("%s",2*RR_big + 3*RR_small) 
+  #}
+  #if(which_cases == "HF"){
+  # volumes2color <- sprintf("%s",0*HF_big + 1*HF_small) 
+  #}
+  #for(i in 1:length(volumes2color)){
+  # if(volumes2color[i] == "0"){
+  #   volumes2color[i] <- "Big HF"
+  # }
+  # else if(volumes2color[i] == "1"){
+  #   volumes2color[i] <- "Small HF"
+  # }
+  # else if(volumes2color[i] == "2"){
+  #   volumes2color[i] <- "Big RR"
+  # }
+  # else if(volumes2color[i] == "3"){
+  #   volumes2color[i] <- "Small RR"
+  # }
+  #}  
+  
+  #mat_col <- data.frame(Size = volumes2color, Diagnosis = hf2color)
+  #rownames(mat_col) <- colnames(normalised_ATs)
+  
   hm=Heatmap(normalised_ATs,
              name = "RR+HF", # Internal name
              
@@ -169,31 +238,32 @@ Hier_clust_multipole <- function(metric_option, lead_option = "IN",
                                     fontsize = 18, fontfamily = "Helvetica"),
              column_split = col_clusters,
              #column_order = get_order(o,2),
-             # top_annotation = HeatmapAnnotation(
-             #   LV_mass = anno_barplot(
-             #     bar_width = 1,
-             #     height = unit(40,"points"),
-             #     c(RR_mass2color,HF_mass2color),
-             #     gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
-             #      name = "Purples"))(100))
-             #     ),
-             #     show_annotation_name = TRUE,
-             #   LV_vol = anno_barplot(
-             #     bar_width = 1,
-             #     height = unit(40,"points"),
-             #     c(RR_volume2color,HF_volume2color),
-             #     gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
-             #      name = "Greys"))(100))
-             #   ),
-             #   LV_quotient = anno_barplot(
-             #     bar_width = 1,
-             #     height = unit(40,"points"),
-             #     c(RR_quotient,HF_quotient),
-             #     gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
-             #      name = "Purples"))(100))
-             #   )
-             # ),
-             # 
+             top_annotation = HeatmapAnnotation(
+               #LV_mass = anno_barplot(
+               #  bar_width = 1,
+               #  height = unit(40,"points"),
+               #  c(RR_mass2color,HF_mass2color),
+               #  gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
+               #   name = "Purples"))(100))
+               #  ),
+                  show_annotation_name = TRUE,
+                LV_vol = anno_barplot(
+                  bar_width = 1,
+                  height = unit(40,"points"),
+                  vectoplot,
+                   #gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
+                  #  name = "Greys"))(100))
+                   gp = gpar(fill = volumes2colors)
+                )
+                #LV_quotient = anno_barplot(
+                #  bar_width = 1,
+                #  height = unit(40,"points"),
+                #  c(RR_quotient,HF_quotient),
+                #  gp = gpar(fill = colorRampPalette(brewer.pal(n = 9,
+                #   name = "Purples"))(100))
+                #)
+              ),
+              
              
              show_column_dend = TRUE,
              show_row_dend = TRUE,
@@ -209,11 +279,11 @@ Hier_clust_multipole <- function(metric_option, lead_option = "IN",
                grid_width = unit(0.25, "npc"),
                title_position = "topcenter",
                title_gp = gpar(fontsize = 20),
-               labels_gp = gpar(fontsize = 15)
-               # LV_mass = list(
-               #   title = "LV mass (g)",
-               #   direction = "horizonal"
-               # )
+               labels_gp = gpar(fontsize = 15),
+                LV_mass = list(
+                  title = "LV mass (g)",
+                  direction = "horizonal"
+                )
              ),
              show_heatmap_legend = TRUE,
              
@@ -276,7 +346,7 @@ Plot_Dipoles_Fancy <- function(which_cases, with_lines = TRUE, metric_option,
                                show_percentages = FALSE,
                                flag_debugging = FALSE){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("scales","dplyr","ggplot2"))
   
   if(bipole_from_file){
@@ -292,6 +362,12 @@ Plot_Dipoles_Fancy <- function(which_cases, with_lines = TRUE, metric_option,
     colnames(optimal_choices) <- c("Vein","Patients","Bipole")
     # print("Finding optimal bipoles for each vein...")
     for (vein in c("AN","AL","LA","IL","IN")) {
+      #res_list <- Find_optimal_monodipoles(vein = vein, response = response,
+      #                                     metric_option = metric_option,
+      #                                    which_cases = which_cases, version=4,
+      #                                    output = "both",
+      #                                    SA_folder = SA_folder,
+      #                                    flag_debugging = flag_debugging)
       res_list <- Find_optimal_monodipoles(vein = vein, response = response,
                                            metric_option = metric_option,
                                            which_cases = which_cases, version=4,
@@ -728,7 +804,7 @@ Show_Delta_Optimal_Cohort_Quadripole <- function(cohort = "HF", metric_option,
                                                  optimal_idx = 1, output = "df",
                                                  flag_debugging = FALSE){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("dplyr","nnet"))
   
   optimal_reductions_df <- c() 
@@ -1067,13 +1143,16 @@ Show_Delta_Optimal_Cohort_Quadripole <- function(cohort = "HF", metric_option,
 #' 
 Plot_all <- function(plottype = "HAC", metric_option = "TAT",
                      lead_option = "AN", which_cases = "HF",
-                     SA_folder = "default_HF_noPVTV", flag_debugging = FALSE){
+                     SA_folder = "default_HF_noPVTV",
+                     root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/",
+                     flag_debugging = FALSE){
   
   if(metric_option == "ALL"){
     for(m_option in c("TAT","LVTAT","AT090","AT1090")){
     Plot_all(plottype = plottype, metric_option = m_option,
              lead_option = lead_option, which_cases = which_cases, 
-             SA_folder = SA_folder, flag_debugging = flag_debugging)
+             SA_folder = SA_folder, flag_debugging = flag_debugging,
+             root_directory = root_directory)
     }
   }
   
@@ -1081,7 +1160,8 @@ Plot_all <- function(plottype = "HAC", metric_option = "TAT",
     for(l_option in c("AN","AL","LA","IL","IN")){
       Plot_all(plottype = plottype, metric_option = metric_option,
                lead_option = l_option, which_cases = which_cases, 
-               SA_folder = SA_folder, flag_debugging = flag_debugging)
+               SA_folder = SA_folder, flag_debugging = flag_debugging,
+               root_directory = root_directory)
     }
   }
   
@@ -1089,7 +1169,8 @@ Plot_all <- function(plottype = "HAC", metric_option = "TAT",
     for(wc_option in c("HF","RR","RRHF")){
       Plot_all(plottype = plottype, metric_option = metric_option,
                lead_option = lead_option, which_cases = wc_option, 
-               SA_folder = SA_folder, flag_debugging = flag_debugging)
+               SA_folder = SA_folder, flag_debugging = flag_debugging,
+               root_directory = root_directory)
     }
   }
   
@@ -1186,7 +1267,7 @@ ShowDeltaDesignVSCohort <- function(cohort = "RR", metric_option,
                                     quad_design = "1267", draw_option = "df",
                                     flag_debugging = FALSE){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("dplyr","nnet","ComplexHeatmap","circlize"))
   
   optimal_reductions_df <- c() 
@@ -1507,7 +1588,7 @@ ShowDeltaDesignVSCohort <- function(cohort = "RR", metric_option,
                                     quad_design = "1267", 
                                     flag_debugging = FALSE){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("dplyr","nnet","ComplexHeatmap","circlize"))
   
   optimal_reductions_df <- c() 
@@ -1728,7 +1809,7 @@ MPPImprovement <- function(cohort = "RR", metric_option,
                                     output = "%",
                                     flag_debugging = FALSE){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("dplyr","nnet","ComplexHeatmap","circlize"))
   
   optimal_reductions_df <- c() 
@@ -1916,7 +1997,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
       y_bounds <- c(0,0.16)
     }
   if(curves == "baseline_veins"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     baseline_df <- BaselineSingleElectrodeReduction(output = output,
                                                     SA_folder = "default_HF_noPVTV",
                                                     flag_debugging = flag_debugging)
@@ -1945,7 +2026,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "baseline_patients"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     baseline_df <- BaselineSingleElectrodeReduction(output = output,
                                                     SA_folder = "default_HF_noPVTV",
                                                     flag_debugging = flag_debugging)
@@ -1971,7 +2052,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "single_HF_veins"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     global_optimal_HF <- MPPDesignReduction(cohort = "HF", output = output)
     colours_vec <- c("#FC0000", "#ED7c31", "#FFBF00", "#00B04F","#00B0F0")
     
@@ -1997,7 +2078,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "single_HF_patients"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     global_optimal_HF <- MPPDesignReduction(cohort = "HF", output = output)
     
     p <- ggplot(global_optimal_HF, aes(x=Reduction)) +
@@ -2023,7 +2104,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "single_RR_veins"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     global_optimal_HF <- MPPDesignReduction(cohort = "RR", output = output)
     colours_vec <- c("#FC0000", "#ED7c31", "#FFBF00", "#00B04F","#00B0F0")
     
@@ -2049,7 +2130,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "single_RR_patients"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     global_optimal_HF <- MPPDesignReduction(cohort = "RR", output = output)
     
     p<- ggplot(global_optimal_HF, aes(x=Reduction)) +
@@ -2075,7 +2156,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "central"){
-    source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     
     HF_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
                                                     vein = "ALL",
@@ -2155,7 +2236,7 @@ PlotDensities <- function(curves, output = "%", flag_debugging = FALSE){
            width = 20,height = 10)
   }
   if(curves == "optimal_vs_cohort"){
-      source("/home/crg17/Desktop/scripts/multipole/R/postprocessing.R")
+      source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/postprocessing.R")
     
     HF_design <- Find_Optimal_Quadripole_Optimising(metric_option = "AT090",
                                                     vein = "ALL",

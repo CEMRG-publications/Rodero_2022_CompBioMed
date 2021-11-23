@@ -1,7 +1,7 @@
 library("RColorBrewer") # For the colours 
 #library("gplots")
 require("pheatmap")
-library("d3heatmap")
+#library("d3heatmap")
 library("viridis")
 require("ComplexHeatmap")
 library("circlize")
@@ -216,7 +216,13 @@ read_dataframes <- function(metric_option, lead_option, which_cases, version, SA
 }
 
 
-hier_clust_multipole <- function(metric_option = "AT1090", lead_option = "PO", col_clusters = 3, row_clusters = 10, draw_hm = FALSE, thresh_plot = 100, which_cases = "RRHF", max_bar = 30, version, output = "number", SA_folder = SA_folder, RV_midseptum = RV_midseptum){
+hier_clust_multipole <- function(metric_option = "AT1090", lead_option = "PO", 
+                                 col_clusters = 3, row_clusters = 10, 
+                                 draw_hm = FALSE, thresh_plot = 100,
+                                 which_cases = "RRHF", max_bar = 30, version, 
+                                 output = "number", SA_folder, 
+                                 RV_midseptum = RV_midseptum,
+                                 flag_debugging = flag_debugging){
 
   if(metric_option == "AT1090"){
   plottitle = "AT 10%-90% "
@@ -225,6 +231,9 @@ hier_clust_multipole <- function(metric_option = "AT1090", lead_option = "PO", c
 } else if(metric_option == "TATLV"){
   plottitle = "TAT of the LV "
 }
+  else if(metric_option == "AT090"){
+    plottitle = "AT 0%-90%"
+  }
 
 if(lead_option == "AN"){
   plottitle = paste0(plottitle,"pacing in the anterior position")
@@ -242,7 +251,12 @@ plottitle = paste0(plottitle,"\n")
 
 # We read the dataframe
 if(exists("normalised_ATs")) rm(normalised_ATs)
-normalised_cohorts <- read_dataframes(metric_option = metric_option, lead_option = lead_option, which_cases = which_cases, version = version, SA_folder = SA_folder, RV_midseptum = RV_midseptum)
+normalised_cohorts <- Read_dataframes(metric_option = metric_option,
+                                      lead_option = lead_option,
+                                      which_cases = which_cases,
+                                      version = version, SA_folder = SA_folder,
+                                      flag_debugging = flag_debugging)
+#normalised_cohorts <- read_dataframes(metric_option = metric_option, lead_option = lead_option, which_cases = which_cases, version = version, SA_folder = SA_folder, RV_midseptum = RV_midseptum)
 normalised_RR <- normalised_cohorts$normalised_RR
 normalised_HF <- normalised_cohorts$normalised_HF
 if(which_cases == "RR" || which_cases == "RRHF"){
@@ -257,47 +271,50 @@ if(which_cases == "HF" || which_cases == "RRHF"){
 }
 # Coloring
 
-
-RR_mass <- 1.05*read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol.dat", header = TRUE)
+RR_mass <- 1.05*Read_table(file = "/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol.dat",
+                           header = TRUE, flag_debugging = flag_debugging)
 RR_mass2color <- RR_mass$RV
-HF_mass <- 1.05*0.001*read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol_HF.dat", header = TRUE)
+HF_mass <- 1.05*0.001*Read_table(file = "/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/meshes_vol_HF.dat",
+                                 header = TRUE, flag_debugging = flag_debugging)
 HF_mass2color <- HF_mass$RV
 
-RR_volumes <- read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes.txt", header = TRUE)
+RR_volumes <- Read_table(file = "/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes.txt",
+                         header = TRUE, flag_debugging = flag_debugging)
 RR_volume2color <- RR_volumes$RV_mL
-HF_volumes <- read.table("/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes_HF.csv", header = TRUE, sep = ",")
-HF_volume2color <- HF_volumes$RV
+HF_volumes <- Read_table(file = "/media/crg17/Seagate Backup Plus Drive/CT_cases/forall/chambers_volumes_HF.csv",
+                         header = TRUE, sep = ",", flag_debugging = flag_debugging)
+#HF_volume2color <- HF_volumes$RV
 
-RR_quotient <- RR_mass2color/RR_volume2color
-HF_quotient <- HF_mass2color/HF_volume2color
+#RR_quotient <- RR_mass2color/RR_volume2color
+#HF_quotient <- HF_mass2color/HF_volume2color
 
-RR_big <- RR_volume2color > 250 
-RR_small <- RR_volume2color < 100
-HF_big <- HF_volume2color > 250 
-HF_small <- HF_volume2color < 100
+#RR_big <- RR_volume2color > 250 
+#RR_small <- RR_volume2color < 100
+#HF_big <- HF_volume2color > 250 
+#HF_small <- HF_volume2color < 100
 
-if(exists("volumes2color")) rm(volumes2color)
-if(which_cases == "RRHF"){
-  volumes2color <- sprintf("%s",1 - c(RR_big,HF_big) + c(RR_small,HF_small)) # 0 for big, 1 for medium, 2 for small
-}
-if(which_cases == "RR"){
-  volumes2color <- sprintf("%s",1 - RR_big + RR_small) # 0 for big, 1 for medium, 2 for small
-}
-if(which_cases == "HF"){
-  volumes2color <- sprintf("%s",1 - HF_big + HF_small) # 0 for big, 1 for medium, 2 for small
-}
+#if(exists("volumes2color")) rm(volumes2color)
+#if(which_cases == "RRHF"){
+#  volumes2color <- sprintf("%s",1 - c(RR_big,HF_big) + c(RR_small,HF_small)) # 0 for big, 1 for medium, 2 for small
+#}
+#if(which_cases == "RR"){
+#  volumes2color <- sprintf("%s",1 - RR_big + RR_small) # 0 for big, 1 for medium, 2 for small
+#}
+#if(which_cases == "HF"){
+#  volumes2color <- sprintf("%s",1 - HF_big + HF_small) # 0 for big, 1 for medium, 2 for small
+#}
 
-for(i in 1:length(volumes2color)){
-  if(volumes2color[i] == "0"){
-    volumes2color[i] <- "Big"
-  }
-  else if(volumes2color[i] == "1"){
-    volumes2color[i] <- "Medium"
-  }
-  else if(volumes2color[i] == "2"){
-    volumes2color[i] <- "Small"
-  }
-}
+#for(i in 1:length(volumes2color)){
+#  if(volumes2color[i] == "0"){
+#    volumes2color[i] <- "Big"
+#  }
+#  else if(volumes2color[i] == "1"){
+#    volumes2color[i] <- "Medium"
+#  }
+#  else if(volumes2color[i] == "2"){
+ #   volumes2color[i] <- "Small"
+ # }
+#}
 
 if(exists("normalised_ATs")) rm(normalised_ATs)
 if(which_cases == "RRHF"){
@@ -320,8 +337,8 @@ for(i in 1:length(hf2color)){
 }
 
 
-mat_col <- data.frame(Size = volumes2color, Diagnosis = hf2color)
-rownames(mat_col) <- colnames(normalised_ATs)
+#mat_col <- data.frame(Size = volumes2color, Diagnosis = hf2color)
+#rownames(mat_col) <- colnames(normalised_ATs)
 
 
 # Colors for rows
@@ -607,9 +624,18 @@ if(draw_hm == FALSE){
 }
 
 
-Find_optimal_monodipoles <- function(vein="LA",response=100,which_cases="HF",version, output = "number", SA_folder = SA_folder, RV_midseptum = RV_midseptum){
+Find_optimal_monodipoles <- function(vein="LA",response=100,which_cases="HF",
+                                     version, output = "number", metric_option="AT090",
+                                     SA_folder = SA_folder,
+                                     RV_midseptum = FALSE,
+                                     flag_debugging = F){
 
-  y<-hier_clust_multipole(lead_option = vein, thresh_plot = response, which_cases = which_cases,version=version, draw_hm = FALSE, output = output, SA_folder = SA_folder, RV_midseptum = RV_midseptum)
+  y<-hier_clust_multipole(lead_option = vein, thresh_plot = response,
+                          which_cases = which_cases,version=version, 
+                          draw_hm = FALSE, output = output, 
+                          SA_folder = SA_folder, RV_midseptum = RV_midseptum,
+                          flag_debugging = flag_debugging,
+                          metric_option = metric_option)
   
   return(y)
   
@@ -1196,11 +1222,23 @@ maxN <- function(x, N=2){
   sort(x,partial=len-N+1)[len-N+1]
 }
 
-Find_Optimal_Quadripole_Optimising <- function(vein,which_cases,method,response=100,SA_folder,version, RV_midseptum = RV_midseptum){
+Find_Optimal_Quadripole_Optimising <- function(vein,which_cases,method,
+                                               response=100,SA_folder,version,
+                                               RV_midseptum = F,
+                                               metric_option = "AT090",
+                                               flag_debugging = FALSE){
   quadripole <- c()
   if(vein != "ALL"){
     # We get the names of the optimal lead designs in monopoles and dipoles
-    bipolar_names_score <- Find_optimal_monodipoles(vein = vein, response = response, which_cases = which_cases, version = version, output = "both", SA_folder = SA_folder, RV_midseptum = RV_midseptum)
+    bipolar_names_score <- Find_optimal_monodipoles(vein = vein, 
+                                                    response = response, 
+                                                    which_cases = which_cases, 
+                                                    version = version,
+                                                    output = "both", 
+                                                    SA_folder = SA_folder,
+                                                    RV_midseptum = RV_midseptum,
+                                                    metric_option = metric_option,
+                                                    flag_debugging = flag_debugging)
     
     bipolar_names <- bipolar_names_score[[1]]
     bipolar_scores <- bipolar_names_score[[2]]
@@ -1211,13 +1249,21 @@ Find_Optimal_Quadripole_Optimising <- function(vein,which_cases,method,response=
     
   }
   else{
-    hierarchy_veins <- c("LA","PL","AL","PO","AN")
+    hierarchy_veins <- c("LA","IL","AL","IN","AN")
     bipolar_names <- c()
     bipolar_scores <- c()
     for(each_vein in hierarchy_veins){
       # print(paste0("Checking vein ",each_vein,"..."))
       # We get the names of the optimal lead designs in monopoles and dipoles
-      bipolar_names_score_temp <- Find_optimal_monodipoles(vein = each_vein, response = response, which_cases = which_cases, version = version, output = "both", SA_folder = SA_folder, RV_midseptum = RV_midseptum)
+      bipolar_names_score_temp <- Find_optimal_monodipoles(vein = each_vein,
+                                                           response = response,
+                                                           which_cases = which_cases,
+                                                           version = version, 
+                                                           output = "both",
+                                                           SA_folder = SA_folder, 
+                                                           RV_midseptum = RV_midseptum,
+                                                           metric_option = metric_option,
+                                                           flag_debugging = flag_debugging)
       
       bipolar_names_temp <- bipolar_names_score_temp[[1]]
       bipolar_scores_temp <- bipolar_names_score_temp[[2]]

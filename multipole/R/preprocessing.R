@@ -1,9 +1,10 @@
-Correct_HFLA_leads <- function(foldername,casenumber, flag_debugging = FALSE){
+Correct_HFLA_leads <- function(foldername,casenumber, flag_debugging = FALSE,
+                               root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/leads_operations.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/leads_operations.R")
   
   # print(paste0("Reading ","/data/SA_multipole/",foldername,"/HF/",casenumber,"/multipole_AT1090.dat"))
-  multipole_AT1090 <- read.csv(paste0("/data/SA_multipole/",foldername,"/HF/",casenumber,"/multipole_AT1090.dat"), sep="", stringsAsFactors=FALSE)
+  multipole_AT1090 <- read.csv(paste0(root_directory,foldername,"/HF/",casenumber,"/multipole_AT1090.dat"), sep="", stringsAsFactors=FALSE)
   multipole_AT1090$lead <- ascii2bin_lead(bin2ascii_lead(multipole_AT1090$lead))
   multipole_AT1090_corrected <- multipole_AT1090
   
@@ -15,7 +16,7 @@ Correct_HFLA_leads <- function(foldername,casenumber, flag_debugging = FALSE){
     }
   }
   
-  write.table(multipole_AT1090_corrected,file=paste0("/data/SA_multipole/",foldername,"/HF/",casenumber,"/multipole_AT1090_leadcorrected.dat"),quote = FALSE,sep = " ",dec = ".",row.names = FALSE,col.names = TRUE)
+  write.table(multipole_AT1090_corrected,file=paste0(root_directory,foldername,"/HF/",casenumber,"/multipole_AT1090_leadcorrected.dat"),quote = FALSE,sep = " ",dec = ".",row.names = FALSE,col.names = TRUE)
 }
 
 #' @description Script to create the monopole activation files from individual
@@ -34,17 +35,20 @@ Correct_HFLA_leads <- function(foldername,casenumber, flag_debugging = FALSE){
 #' @return It creates folders in the /data/SA_multipole folder with the
 #' different monopolar activations.
 CreateMonopoles <- function(which_cases,SA_folder,ekbatch=TRUE, midseptum = FALSE,
-                            flag_debugging = FALSE){
+                            flag_debugging = FALSE, with_scar = FALSE,
+                            root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   if(which_cases == "both"){
     CreateMonopoles(which_cases = "RR", SA_folder = SA_folder,
                     ekbatch = ekbatch , midseptum = midseptum,
-                    flag_debugging = flag_debugging)
+                    flag_debugging = flag_debugging, root_directory = root_directory,
+                    with_scar = with_scar)
     CreateMonopoles(which_cases = "HF", SA_folder = SA_folder,
                     ekbatch = ekbatch , midseptum = midseptum,
-                    flag_debugging = flag_debugging)
+                    flag_debugging = flag_debugging, with_scar = with_scar,
+                    root_directory = root_directory)
   }
   else{
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages(c("icesTAF","jjb"))
   
   if(midseptum == FALSE){
@@ -73,7 +77,7 @@ CreateMonopoles <- function(which_cases,SA_folder,ekbatch=TRUE, midseptum = FALS
   
   hearts <- c(paste0("0",c(1:9)),10:num_cases)
   
-  if(SA_folder == "scar"){
+  if(with_scar){
     hearts <- hearts[-c(13,21)]
   }
   
@@ -107,22 +111,24 @@ CreateMonopoles <- function(which_cases,SA_folder,ekbatch=TRUE, midseptum = FALS
                               "/simulations/multipole/init_files/",SA_folder,
                               "_",vein,"_",electrode,"_elemwise.dat")
         }
-        
-        Debug_message(file2read,"r",flag_debugging)
-        AT <- read.table(file2read)
-        
-        AT_res <- pmin(AT_apex,AT)
-        
-        directory <- paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",
+        directory <- paste0(root_directory,SA_folder,"/",which_cases,"/",
                             heart)
         outname <- paste0(which_cases,heart,"_",vein,"_",
                           ascii2bin_lead(electrode),".dat")
-        
-        jjb::mkdir(directory, r = TRUE)
-        
-        Debug_message(paste0(directory,"/",outname),"w",flag_debugging)
-        write.table(AT_res,file=paste0(directory,"/",outname),quote = FALSE,
-                    row.names = FALSE,col.names = FALSE)
+        if(!(file.exists(paste0(directory,"/",outname)))){
+          Debug_message(file2read,"r",flag_debugging)
+          AT <- read.table(file2read)
+          
+          AT_res <- pmin(AT_apex,AT)
+          
+          
+          
+          jjb::mkdir(directory, r = TRUE)
+          
+          Debug_message(paste0(directory,"/",outname),"w",flag_debugging)
+          write.table(AT_res,file=paste0(directory,"/",outname),quote = FALSE,
+                      row.names = FALSE,col.names = FALSE)
+        }
       }
     }
   }
@@ -144,19 +150,23 @@ CreateMonopoles <- function(which_cases,SA_folder,ekbatch=TRUE, midseptum = FALS
 #' 
 #' @return All the files with the bipoles in the SA_folder.
 
-CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,flag_debugging = FALSE){
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,
+                          flag_debugging = FALSE, with_scar = FALSE,
+                          root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   if(which_cases=="both"){
-    CreateDipoles(SA_folder,which_cases = "RR",heart,ekbatch,flag_debugging)
-    CreateDipoles(SA_folder,which_cases = "HF",heart,ekbatch,flag_debugging)
+    CreateDipoles(SA_folder,which_cases = "RR",heart,ekbatch,flag_debugging,
+                  root_directory = root_directory, with_scar = with_scar)
+    CreateDipoles(SA_folder,which_cases = "HF",heart,ekbatch,flag_debugging,
+                  root_directory = root_directory, with_scar = with_scar)
   }
   else{
   if(heart=="all"){
-    source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+    source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
     heart_list <- c(paste0("0",1:9),10:20)
     if(which_cases=="HF"){
       heart_list <- c(heart_list,21:24)
-      if(SA_folder == "scar"){
+      if(with_scar){
         heart_list <- heart_list[-c(13,21)]
       }
     }
@@ -165,7 +175,8 @@ CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,flag_debuggin
     registerDoParallel(cores=20)
     
     foreach(i=1:length(heart_list)) %dopar% {
-      CreateDipoles(SA_folder,which_cases,heart = heart_list[i],ekbatch,flag_debugging)
+      CreateDipoles(SA_folder,which_cases,heart = heart_list[i],ekbatch,
+                    flag_debugging, root_directory = root_directory)
     }
   }
   else{
@@ -177,7 +188,7 @@ CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,flag_debuggin
   if(flag_debugging){
     print(paste0("Working on case ",heart))
   }
-  files_vec <-  list.files(paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart))
+  files_vec <-  list.files(paste0(root_directory,SA_folder,"/",which_cases,"/",heart))
   if(ekbatch){
     vein_names <- c("AN","AL","LA","IL","IN")
   }
@@ -190,17 +201,17 @@ CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,flag_debuggin
     indices <- combn(length(files_vein),2)
     for(i in c(1:ncol(indices))){
 
-      file2read <- paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,"/",files_vein[indices[1,i]])
+      file2read <- paste0(root_directory,SA_folder,"/",which_cases,"/",heart,"/",files_vein[indices[1,i]])
       Debug_message(file2read,"r",flag_debugging)
       AT1 <- read.table(file2read)
       
-      file2read <- paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,"/",files_vein[indices[2,i]])
+      file2read <- paste0(root_directory,SA_folder,"/",which_cases,"/",heart,"/",files_vein[indices[2,i]])
       Debug_message(file2read,"r",flag_debugging)
       AT2 <- read.table(file2read)
       
       AT_res <- pmin(AT1,AT2)
       
-      directory <- paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart)
+      directory <- paste0(root_directory,SA_folder,"/",which_cases,"/",heart)
       name1 <- substr(files_vein[indices[1,i]],nchar(files_vein[indices[1,i]])-11,nchar(files_vein[indices[1,i]])-4)
       name2 <- substr(files_vein[indices[2,i]],nchar(files_vein[indices[2,i]])-11,nchar(files_vein[indices[2,i]])-4)
       
@@ -228,7 +239,8 @@ CreateDipoles <- function(SA_folder,which_cases,heart,ekbatch=TRUE,flag_debuggin
 #' 
 #' @return Writes a folder with the same name as the input but with the suffix "_nobase"
 
-Crop_base_from_AT <- function(heart,which_cases,SA_folder,all_subfolders = TRUE,flag_debugging = FALSE,num_cores = 20){
+Crop_base_from_AT <- function(heart,which_cases,SA_folder,all_subfolders = TRUE,
+                              flag_debugging = FALSE,num_cores = 20){
   Load_Install_Packages("jjb")
   
   if(which_cases == "RR")
@@ -1060,7 +1072,7 @@ Map_thickness_transmurally_pts <- function(case_number, flag_debugging = FALSE){
 #' @param flag_debugging If TRUE prints whatever is reading and writing.
 #' 
 #' @return A file with 1 if the point is scar tissue and 0 otherwise.
-Select_scar_thickness <- function(case_number, flag_debugging = FALSE){
+Select_scar_thickness <- function(case_number, scar_thickness_mm = 5, flag_debugging = FALSE){
 
   source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
   
@@ -1082,7 +1094,7 @@ Select_scar_thickness <- function(case_number, flag_debugging = FALSE){
   ll <- dim(BiV_septum)[1]
   septum_vtx <- as.double(BiV_septum$V1[3:ll])
   
-  thin_vtx <- which(BiV_thickness < 5000)
+  thin_vtx <- which(BiV_thickness < 1000*scar_thickness_mm)
   
   noapex_vtx <- which(BiV_AHA < 17)
   nobase_vtx <- which(BiV_AHA > 0)
@@ -1094,7 +1106,7 @@ Select_scar_thickness <- function(case_number, flag_debugging = FALSE){
   is_scar <- rep(0,length(BiV_AHA))
   is_scar[chosen_vtx] <- 1
   
-  Write_table(is_scar,file = paste0(path2biv, "/BiV_scar_5mm.dat"),
+  Write_table(is_scar,file = paste0(path2biv, "/BiV_scar_", toString(scar_thickness_mm), "mm.dat"),
               quote = FALSE, row.names = FALSE, col.names = FALSE,
               flag_debugging = flag_debugging)
 }
@@ -1117,7 +1129,7 @@ Select_scar_thickness <- function(case_number, flag_debugging = FALSE){
 #' filename=./BiV_FEC_w5_h33_retagged_noPVTV_scar5mm; 
 #' cp $filename"_noheader.elem" $filename".elem";
 #'  sed -i '1s/^/'$(wc -l < $filename".elem")'\n/' $filename".elem"
-Change_scar_tag <- function(case_number, meshname_noheader,
+Change_scar_tag <- function(case_number, meshname_noheader, scar_thickness_mm = 5,
                             flag_debugging = FALSE){
 
   path2biv <- paste0("/media/crg17/Seagate Backup Plus Drive/CT_cases/HF_case",
@@ -1129,14 +1141,14 @@ Change_scar_tag <- function(case_number, meshname_noheader,
                              flag_debugging = flag_debugging)
   colnames(BiV_noheader) <- c("el","p1","p2","p3","p4","tag")
   
-  BiV_scar <- Read_table(paste0(path2biv,"/BiV_scar_5mm_elem.dat"),
+  BiV_scar <- Read_table(paste0(path2biv,"/BiV_scar_", toString(scar_thickness_mm),"mm_elem.dat"),
                          quote="\"", comment.char="",
                          flag_debugging = flag_debugging)
   
   BiV_noheader$tag[which(BiV_scar > 0)] <- 100
   
   Write_table(BiV_noheader, file = paste0(path2biv, "/meshes/", meshname_noheader,
-                                          "_scar5mm_noheader.elem"),
+                                          "_scar",toString(scar_thickness_mm),"mm_noheader.elem"),
               quote = FALSE, row.names = FALSE, col.names = FALSE,
               flag_debugging = flag_debugging)
   

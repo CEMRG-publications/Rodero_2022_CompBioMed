@@ -59,11 +59,11 @@ done
 
 if [[ $which_cases == "both" ]];
 then
-cmd="/home/crg17/Desktop/scripts/multipole/sh/run_multipole_ekbatch.sh --which_cases RR --biv_only "$biv_only" --midseptum "$midseptum" --SA_folder "$SA_folder" --FEC_lvl "$FEC_lvl" --suffix "$suffix
+cmd="/home/crg17/Desktop/KCL_projects/MPP/multipole/sh/run_multipole_ekbatch.sh --which_cases RR --biv_only "$biv_only" --midseptum "$midseptum" --SA_folder "$SA_folder" --FEC_lvl "$FEC_lvl" --suffix "$suffix
 echo $cmd
 eval $cmd
 
-cmd="/home/crg17/Desktop/scripts/multipole/sh/run_multipole_ekbatch.sh --which_cases HF --biv_only "$biv_only" --midseptum "$midseptum" --SA_folder "$SA_folder" --FEC_lvl "$FEC_lvl" --suffix "$suffix
+cmd="/home/crg17/Desktop/KCL_projects/MPP/multipole/sh/run_multipole_ekbatch.sh --which_cases HF --biv_only "$biv_only" --midseptum "$midseptum" --SA_folder "$SA_folder" --FEC_lvl "$FEC_lvl" --suffix "$suffix
 echo $cmd
 eval $cmd
 
@@ -97,11 +97,11 @@ for heart in $all_cases
 
     if [[ $midseptum == false ]]
     then
-    cmd="/home/common/carp-dcse-pt/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "$init_files_path"/"$SA_folder"_BiV.RV_endo.apex"
+    cmd="/home/common/CARPentry_KCL_latest/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "$init_files_path"/"$SA_folder"_BiV.RV_endo.apex"
 
     elif [[ $midseptum == true ]]
     then
-    cmd="/home/common/carp-dcse-pt/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "$init_files_path"/"$SA_folder"_BiV.midseptum"
+    cmd="/home/common/CARPentry_KCL_latest/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "$init_files_path"/"$SA_folder"_BiV.midseptum"
 
     fi
     echo $cmd
@@ -109,7 +109,7 @@ for heart in $all_cases
 
     elif [[ $biv_only == false ]]
     then
-    cmd="/home/common/carp-dcse-pt/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "
+    cmd="/home/common/CARPentry_KCL_latest/bin/ekbatch "$mesh_path"/BiV_FEC_w5_h"$FEC_lvl"_retagged_"$suffix" "
     for PHI in AN AL LA IL IN
     do
     for Z in `seq 1 8`

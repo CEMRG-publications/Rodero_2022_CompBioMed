@@ -265,9 +265,11 @@ Write_EP_files <- function(SA_folder,which_cases,heart,
                            output_TAT = TRUE, output_AT1090 = TRUE,
                            output_AT090 = TRUE, output_VEUTAT = TRUE,
                            output_VEUmean = TRUE, output_LVTAT = TRUE, 
-                           flag_debugging = FALSE){
+                           flag_debugging = FALSE,
+                           root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/",
+                           with_scar = F){
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
   Load_Install_Packages("doParallel")
   
   if(which_cases == "both"){
@@ -276,19 +278,24 @@ Write_EP_files <- function(SA_folder,which_cases,heart,
                    output_AT1090 = output_AT1090, output_AT090 = output_AT090,
                    output_VEUTAT = output_VEUTAT, 
                    output_VEUmean = output_VEUmean, output_LVTAT = output_LVTAT,
-                   flag_debugging = flag_debugging)
+                   flag_debugging = flag_debugging, root_directory = root_directory,
+                   with_scar = with_scar)
     Write_EP_files(SA_folder = SA_folder, which_cases = "HF", heart = heart,
                    output_TAT = output_TAT,
                    output_AT1090 = output_AT1090, output_AT090 = output_AT090,
                    output_VEUTAT = output_VEUTAT,
                    output_VEUmean = output_VEUmean, output_LVTAT = output_LVTAT,
-                   flag_debugging = flag_debugging)
+                   flag_debugging = flag_debugging, root_directory = root_directory,
+                   with_scar = with_scar)
   }
     else{
       if(heart=="all"){
         heart_list <- c(paste0("0",1:9),10:20)
         if(which_cases=="HF"){
           heart_list <- c(heart_list,21:24)
+          if(with_scar){
+            heart_list <- heart_list[-c(13,21)]
+          }
         }
         registerDoParallel(cores=20)
 
@@ -301,7 +308,9 @@ Write_EP_files <- function(SA_folder,which_cases,heart,
                          output_VEUTAT = output_VEUTAT, 
                          output_VEUmean = output_VEUmean,
                          output_LVTAT = output_LVTAT,
-                         flag_debugging = flag_debugging)
+                         flag_debugging = flag_debugging,
+                         root_directory = root_directory,
+                         with_scar = with_scar)
         }
       }
       
@@ -314,133 +323,168 @@ Write_EP_files <- function(SA_folder,which_cases,heart,
                        which_cases,"_case",heart,"/meshing/1000um/BiV")
     
 
-      tagfilename <- paste0("BiV_tags_",SA_folder,".dat")
+    tagfilename <- paste0("BiV_tags_",SA_folder,".dat")
     
+    we_can_skip <- T
     
-    if(output_TAT || output_AT1090 || output_LVTAT || output_AT090){
-      biv_volume <- paste0(path2biv,"/BiV_mesh_volume.dat") %>%
-                    Read_table(file = ., flag_debugging = flag_debugging)
-      biv_volume <- biv_volume$V1
+    if(output_TAT && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                          which_cases,"/",heart,
+                                          "/multipole_TAT.dat")))){
+      we_can_skip <- F
     }
-
-    biv_tags <- paste0(path2biv,"/",tagfilename) %>%
-                Read_table(file = ., flag_debugging = flag_debugging)
-    biv_tags <- biv_tags$V1
-
-
-
-    file_list <- list.files(path=paste0("/data/SA_multipole/",SA_folder,"/",
-                                        which_cases,"/",heart))
-    file_list <- file_list[which(toupper(substr(file_list,0,1)) == "H")]
-
-    dataset_TAT <- as.data.frame(matrix(nrow = 0, ncol = 6))
-    colnames(dataset_TAT) <- c("lead","AN","AL","LA","IL","IN")
+    if(output_AT1090 && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                          which_cases,"/",heart,
+                                          "/multipole_AT1090.dat")))){
+      we_can_skip <- F
+    }
+    if(output_AT090 && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                          which_cases,"/",heart,
+                                          "/multipole_AT090.dat")))){
+      we_can_skip <- F
+    }
+    if(output_VEUTAT && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                            which_cases,"/",heart,
+                                            "/multipole_VEUTAT.dat")))){
+      we_can_skip <- F
+    }
+    if(output_VEUmean && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                            which_cases,"/",heart,
+                                            "/multipole_VEUmean.dat")))){
+      we_can_skip <- F
+    }
+    if(output_LVTAT && !(file.exists(paste0(root_directory,SA_folder,"/",
+                                            which_cases,"/",heart,
+                                            "/multipole_LVTAT.dat")))){
+      we_can_skip <- F
+    }
     
-      dataset_AT1090 <- dataset_TAT
-      dataset_AT090 <- dataset_TAT
+    if(!we_can_skip){
       
-      if(output_LVTAT){
-        dataset_LVTAT <- dataset_TAT
+      if(output_TAT || output_AT1090 || output_LVTAT || output_AT090){
+        biv_volume <- paste0(path2biv,"/BiV_mesh_volume.dat") %>%
+                      Read_table(file = ., flag_debugging = flag_debugging)
+        biv_volume <- biv_volume$V1
       }
-    
-    if(output_VEUTAT || output_VEUmean){
-      dataset_VEUTAT <- dataset_TAT
-      dataset_VEUmean <- dataset_TAT
-    }
-    for (i in 1:length(file_list)){
-
-      vm_act_seq <- paste0("/data/SA_multipole/",SA_folder,"/",which_cases
-      ,"/", heart,"/",file_list[i]) %>%
-                    Read_table(., flag_debugging = flag_debugging)
-      vm_act_seq <- vm_act_seq[[1]]
-
-      lead_name <- file_list[i] %>% substr(.,nchar(.)-11,nchar(.)-4)
-      vein_name <- file_list[i] %>% substr(.,nchar(.)-14,nchar(.)-13)
-
-      # we check if that lead is already in the dataset
-      rowtoinsert <- which(dataset_TAT$lead == lead_name)
-
-      if(length(rowtoinsert) == 0){
-        dataset_TAT[nrow(dataset_TAT)+1,1] <- lead_name
-        dataset_AT1090[nrow(dataset_AT1090)+1,1] <- lead_name
-        dataset_AT090[nrow(dataset_AT090)+1,1] <- lead_name
-        
-        if(output_VEUTAT || output_VEUmean){
-          dataset_VEUTAT[nrow(dataset_VEUTAT)+1,1] <- lead_name
-          dataset_VEUmean[nrow(dataset_VEUmean)+1,1] <- lead_name
-        }
+  
+      biv_tags <- paste0(path2biv,"/",tagfilename) %>%
+                  Read_table(file = ., flag_debugging = flag_debugging)
+      biv_tags <- biv_tags$V1
+  
+  
+  
+      file_list <- list.files(path=paste0(root_directory,SA_folder,"/",
+                                          which_cases,"/",heart))
+      file_list <- file_list[which(toupper(substr(file_list,0,1)) == "H")]
+  
+      dataset_TAT <- as.data.frame(matrix(nrow = 0, ncol = 6))
+      colnames(dataset_TAT) <- c("lead","AN","AL","LA","IL","IN")
+      
+        dataset_AT1090 <- dataset_TAT
+        dataset_AT090 <- dataset_TAT
         
         if(output_LVTAT){
-          dataset_LVTAT[nrow(dataset_LVTAT)+1,1] <- lead_name
+          dataset_LVTAT <- dataset_TAT
         }
-        rowtoinsert <- nrow(dataset_TAT)
-      }
-      
-      if(output_TAT || output_AT1090 || output_AT090){
-        res_list <- Compute_EP_metrics_BiV(biv_volume,vm_act_seq,
-                                         biv_tags,ventricle = "both")
-      }
-      if(output_TAT){
-        dataset_TAT[rowtoinsert,vein_name] <- res_list[[1]]
-      }
-      if(output_AT1090){
-        dataset_AT1090[rowtoinsert,vein_name] <- res_list[[2]]
-      }
-      if(output_AT090){
-        dataset_AT090[rowtoinsert,vein_name] <- res_list[[3]]
-      }
-      if(output_LVTAT){
-        res_list <- Compute_EP_metrics_BiV(biv_volume,vm_act_seq,
-                                           biv_tags,ventricle = "LV")
-        dataset_LVTAT[rowtoinsert,vein_name] <- res_list[[1]]
-      }
       
       if(output_VEUTAT || output_VEUmean){
-        res_list <- Compute_VEU(AT_vec_elem = vm_act_seq, BiV_tags = biv_tags)
+        dataset_VEUTAT <- dataset_TAT
+        dataset_VEUmean <- dataset_TAT
+      }
+      for (i in 1:length(file_list)){
+  
+        vm_act_seq <- paste0(root_directory,SA_folder,"/",which_cases
+        ,"/", heart,"/",file_list[i]) %>%
+                      Read_table(., flag_debugging = flag_debugging)
+        vm_act_seq <- vm_act_seq[[1]]
+  
+        lead_name <- file_list[i] %>% substr(.,nchar(.)-11,nchar(.)-4)
+        vein_name <- file_list[i] %>% substr(.,nchar(.)-14,nchar(.)-13)
+  
+        # we check if that lead is already in the dataset
+        rowtoinsert <- which(dataset_TAT$lead == lead_name)
+  
+        if(length(rowtoinsert) == 0){
+          dataset_TAT[nrow(dataset_TAT)+1,1] <- lead_name
+          dataset_AT1090[nrow(dataset_AT1090)+1,1] <- lead_name
+          dataset_AT090[nrow(dataset_AT090)+1,1] <- lead_name
+          
+          if(output_VEUTAT || output_VEUmean){
+            dataset_VEUTAT[nrow(dataset_VEUTAT)+1,1] <- lead_name
+            dataset_VEUmean[nrow(dataset_VEUmean)+1,1] <- lead_name
+          }
+          
+          if(output_LVTAT){
+            dataset_LVTAT[nrow(dataset_LVTAT)+1,1] <- lead_name
+          }
+          rowtoinsert <- nrow(dataset_TAT)
+        }
+        
+        if(output_TAT || output_AT1090 || output_AT090){
+          res_list <- Compute_EP_metrics_BiV(biv_volume,vm_act_seq,
+                                           biv_tags,ventricle = "both")
+        }
+        if(output_TAT){
+          dataset_TAT[rowtoinsert,vein_name] <- res_list[[1]]
+        }
+        if(output_AT1090){
+          dataset_AT1090[rowtoinsert,vein_name] <- res_list[[2]]
+        }
+        if(output_AT090){
+          dataset_AT090[rowtoinsert,vein_name] <- res_list[[3]]
+        }
+        if(output_LVTAT){
+          res_list <- Compute_EP_metrics_BiV(biv_volume,vm_act_seq,
+                                             biv_tags,ventricle = "LV")
+          dataset_LVTAT[rowtoinsert,vein_name] <- res_list[[1]]
+        }
+        
+        if(output_VEUTAT || output_VEUmean){
+          res_list <- Compute_VEU(AT_vec_elem = vm_act_seq, BiV_tags = biv_tags)
+        }
+        if(output_VEUTAT){
+          dataset_VEUTAT[rowtoinsert,vein_name] <- res_list[[1]]
+        }
+        if(output_VEUmean){
+          dataset_VEUmean[rowtoinsert,vein_name] <- res_list[[2]]
+        }
+      }
+      
+      if(output_TAT){
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_TAT.dat") %>%
+        Write_table(dataset_TAT,.,col.names = TRUE,row.names = FALSE,
+                    quote = FALSE, flag_debugging = flag_debugging)
+      }
+      if(output_AT1090){
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_AT1090.dat") %>%
+        Write_table(dataset_AT1090,.,col.names = TRUE,row.names = FALSE,
+                    quote = FALSE, flag_debugging = flag_debugging)
+      }
+      if(output_AT090){
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_AT090.dat") %>%
+          Write_table(dataset_AT090,.,col.names = TRUE,row.names = FALSE,
+                      quote = FALSE, flag_debugging = flag_debugging)
+      }
+      if(output_LVTAT){
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_LVTAT.dat") %>%
+          Write_table(dataset_LVTAT,.,col.names = TRUE,row.names = FALSE,
+                      quote = FALSE, flag_debugging = flag_debugging)
       }
       if(output_VEUTAT){
-        dataset_VEUTAT[rowtoinsert,vein_name] <- res_list[[1]]
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_VEUTAT.dat") %>%
+        Write_table(dataset_VEUTAT,.,col.names = TRUE,row.names = FALSE,
+                    quote = FALSE, flag_debugging = flag_debugging)
       }
       if(output_VEUmean){
-        dataset_VEUmean[rowtoinsert,vein_name] <- res_list[[2]]
+        paste0(root_directory,SA_folder,"/",which_cases,"/",heart,
+               "/multipole_VEUmean.dat") %>%
+        Write_table(dataset_VEUmean,.,col.names = TRUE,row.names = FALSE,
+                      quote = FALSE, flag_debugging = flag_debugging)
       }
-    }
-    
-    if(output_TAT){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_TAT.dat") %>%
-      Write_table(dataset_TAT,.,col.names = TRUE,row.names = FALSE,
-                  quote = FALSE, flag_debugging = flag_debugging)
-    }
-    if(output_AT1090){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_AT1090.dat") %>%
-      Write_table(dataset_AT1090,.,col.names = TRUE,row.names = FALSE,
-                  quote = FALSE, flag_debugging = flag_debugging)
-    }
-    if(output_AT090){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_AT090.dat") %>%
-        Write_table(dataset_AT090,.,col.names = TRUE,row.names = FALSE,
-                    quote = FALSE, flag_debugging = flag_debugging)
-    }
-    if(output_LVTAT){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_LVTAT.dat") %>%
-        Write_table(dataset_LVTAT,.,col.names = TRUE,row.names = FALSE,
-                    quote = FALSE, flag_debugging = flag_debugging)
-    }
-    if(output_VEUTAT){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_VEUTAT.dat") %>%
-      Write_table(dataset_VEUTAT,.,col.names = TRUE,row.names = FALSE,
-                  quote = FALSE, flag_debugging = flag_debugging)
-    }
-    if(output_VEUmean){
-      paste0("/data/SA_multipole/",SA_folder,"/",which_cases,"/",heart,
-             "/multipole_VEUmean.dat") %>%
-      Write_table(dataset_VEUmean,.,col.names = TRUE,row.names = FALSE,
-                    quote = FALSE, flag_debugging = flag_debugging)
     }
     }
 }
@@ -461,15 +505,18 @@ Write_EP_files <- function(SA_folder,which_cases,heart,
 Write_EP_files_RV <- function(SA_folder,which_cases,
                               midseptum = FALSE,
                               with_scar = FALSE,
-                              flag_debugging = FALSE){
+                              flag_debugging = FALSE,
+                              root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   
   if(which_cases == "both"){
     Write_EP_files_RV(SA_folder = SA_folder, which_cases = "RR",
                       with_scar = with_scar,
-                      flag_debugging = flag_debugging)
+                      flag_debugging = flag_debugging,
+                      root_directory = root_directory)
     Write_EP_files_RV(SA_folder = SA_folder, which_cases = "HF",
                       with_scar = with_scar,
-                      flag_debugging = flag_debugging)
+                      flag_debugging = flag_debugging,
+                      root_directory = root_directory)
   }
   
   else{
@@ -551,7 +598,7 @@ Write_EP_files_RV <- function(SA_folder,which_cases,
    
   }
   
-  paste0("/data/SA_multipole/",SA_folder,"/",which_cases,
+  paste0(root_directory,SA_folder,"/",which_cases,
                        "/multipole_RVapex.dat") %>%
   Write_table(multipole_RV,file = .,quote = FALSE,col.names = TRUE,
               row.names = TRUE)

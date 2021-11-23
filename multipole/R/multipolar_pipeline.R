@@ -12,12 +12,13 @@ Run_pipeline <- function(which_cases, step, SA_folder = "default_HF",
                          output_VEUTAT = FALSE, output_VEUmean = FALSE,
                          midseptum = FALSE,
                          with_scar = FALSE,
-                         flag_debugging = FALSE){
+                         flag_debugging = FALSE,
+                         root_directory = "/media/crg17/Seagate Expansion Drive/SA_multipole/"){
   ptm <- proc.time()
   
-  source("/home/crg17/Desktop/scripts/multipole/R/common_functions.R")
-  source("/home/crg17/Desktop/scripts/multipole/R/preprocessing.R")
-  source("/home/crg17/Desktop/scripts/multipole/R/compute_EP.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/common_functions.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/preprocessing.R")
+  source("/home/crg17/Desktop/KCL_projects/MPP/multipole/R/compute_EP.R")
   Load_Install_Packages(c("doParallel","dplyr"))
 
   if(which_cases == "RR"){
@@ -76,7 +77,7 @@ Run_pipeline <- function(which_cases, step, SA_folder = "default_HF",
   }
   if(step == "monodipoles" || step == "monopoles"){
     CreateMonopoles(which_cases, SA_folder = SA_folder, midseptum = midseptum,
-                    flag_debugging = flag_debugging)
+                    flag_debugging = flag_debugging, with_scar = with_scar)
     total_time <- proc.time() - ptm
     Send_mail(paste0("Monopoles created in ",which_cases," cases. Total time of",
                      total_time))
@@ -89,7 +90,7 @@ Run_pipeline <- function(which_cases, step, SA_folder = "default_HF",
     # foreach(i=1:length(hearts)) %dopar% {
     # for(i in 1:length(hearts)){
     CreateDipoles(SA_folder = SA_folder, which_cases = which_cases,
-                  heart = "all", flag_debugging = flag_debugging)
+                  heart = "all", flag_debugging = flag_debugging, with_scar = with_scar)
     # }
     total_time <- proc.time() - ptm
     Send_mail(paste0("Dipoles created in ",which_cases," cases. Total time of",
@@ -112,14 +113,15 @@ Run_pipeline <- function(which_cases, step, SA_folder = "default_HF",
                    output_AT090 = output_AT090, output_LVTAT = output_LVTAT,
                    output_VEUTAT = output_VEUTAT, 
                    output_VEUmean = output_VEUmean,
-                   flag_debugging = flag_debugging)
+                   flag_debugging = flag_debugging,
+                   with_scar = with_scar)
       Run_pipeline(which_cases = "HF", step = step, SA_folder = SA_folder,
                    midseptum = midseptum,
                    output_TAT = output_TAT, output_AT1090 = output_AT1090,
                    output_AT090 = output_AT090, output_LVTAT = output_LVTAT,
                    output_VEUTAT = output_VEUTAT, 
                    output_VEUmean = output_VEUmean,
-                   flag_debugging = flag_debugging)
+                   flag_debugging = flag_debugging, with_scar = with_scar)
     }
     else{
       
@@ -135,14 +137,16 @@ Run_pipeline <- function(which_cases, step, SA_folder = "default_HF",
                    output_AT1090 = output_AT1090, output_AT090 = output_AT090,
                    output_LVTAT = output_LVTAT, output_VEUTAT = output_VEUTAT,
                    output_VEUmean = output_VEUmean,
-                   flag_debugging = flag_debugging)
+                   flag_debugging = flag_debugging,
+                   with_scar = with_scar)
       }
       }
       
       Write_EP_files_RV(SA_folder = SA_folder, which_cases = which_cases,
                         with_scar = with_scar,
                         flag_debugging = flag_debugging,
-                        midseptum = midseptum)
+                        midseptum = midseptum,
+                        with_scar = with_scar)
       total_time <- proc.time() - ptm
       Send_mail(paste0("AT tables created in ", which_cases,". Total time of",
                        total_time))
